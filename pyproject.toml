@@ -1,6 +1,6 @@
 [project]
 name = "controllogger"
-version = "0.1.0"
+dynamic = ["version"]
 authors = [
     { name = "Julius König", email = "info@bastelquartier.de" }
 ]
