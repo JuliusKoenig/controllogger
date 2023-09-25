@@ -3,9 +3,6 @@
 FROM python:3
 WORKDIR /usr/src/controllogger
 
-# Copy source code
-COPY controllogger ./
-
 # Install package
 RUN pip install --no-cache-dir ./
 
