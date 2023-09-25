@@ -7,7 +7,7 @@ WORKDIR /usr/src/controllogger
 COPY controllogger ./
 
 # Install package
-pip install --no-cache-dir ./
+RUN pip install --no-cache-dir ./
 
 # Install dev dependencies
 RUN pip install --no-cache-dir -r requirements-dev.txt
