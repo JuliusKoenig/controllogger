@@ -29,7 +29,7 @@ job("Run tests") {
         gitPush { enabled = false }
     }
 
-    container(image = "docker pull bastelquartier.registry.jetbrains.space/p/fapi-el/testcontainer/testcontainer:0.0.1") {
+    container(image = "bastelquartier.registry.jetbrains.space/p/fapi-el/testcontainer/testcontainer:0.0.1") {
         env["URL"] = "https://pypi.pkg.jetbrains.space/bastelquartier/p/fapi-el/controllogger/legacy"
         shellScript {
             content = """
@@ -45,7 +45,7 @@ job("Build and publish to Space") {
         gitPush { enabled = false }
     }
 
-    container(image = "docker pull bastelquartier.registry.jetbrains.space/p/fapi-el/testcontainer/testcontainer:0.0.1") {
+    container(image = "bastelquartier.registry.jetbrains.space/p/fapi-el/testcontainer/testcontainer:0.0.1") {
         env["URL"] = "https://pypi.pkg.jetbrains.space/bastelquartier/p/fapi-el/controllogger/legacy"
         shellScript {
             content = """
