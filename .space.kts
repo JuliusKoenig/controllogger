@@ -12,7 +12,7 @@ job("Prepare testcontainer image") {
 
     kaniko {
         build {
-            file = "./tests/Dockerfile"
+            file = "./tests/testcontainer/Dockerfile"
             labels["vendor"] = "bastelquartier.de"
         }
 
