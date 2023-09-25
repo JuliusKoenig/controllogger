@@ -12,7 +12,7 @@ job("Prepare testcontainer image") {
 
     kaniko {
         build {
-            file = "./tests/testcontainer/Dockerfile"
+            dockerfile = "./tests/testcontainer/Dockerfile"
             labels["vendor"] = "bastelquartier.de"
         }
 
@@ -24,13 +24,35 @@ job("Prepare testcontainer image") {
     }
 }
 
-job("Example shell script") {
-    container(displayName = "Say Hello", image = "ubuntu") {
+job("Run tests") {
+    startOn {
+        gitPush { enabled = false }
+    }
+
+    container(image = "docker pull bastelquartier.registry.jetbrains.space/p/fapi-el/testcontainer/testcontainer:latest") {
+        env["URL"] = "https://pypi.pkg.jetbrains.space/bastelquartier/p/fapi-el/controllogger/legacy"
         shellScript {
             content = """
-                echo Hello
-                echo World!
-                #python setup.py sdist
+                #echo Run tests...
+                #pytest ./tests/
+            """
+        }
+    }
+}
+
+job("Build and publish to Space") {
+    startOn {
+        gitPush { enabled = false }
+    }
+
+    container(image = "docker pull bastelquartier.registry.jetbrains.space/p/fapi-el/testcontainer/testcontainer:latest") {
+        env["URL"] = "https://pypi.pkg.jetbrains.space/bastelquartier/p/fapi-el/controllogger/legacy"
+        shellScript {
+            content = """
+                echo Build package...
+                python -m build
+                echo Upload package...
+                twine upload --repository-url ${'$'}URL -u ${'$'}JB_SPACE_CLIENT_ID -p ${'$'}JB_SPACE_CLIENT_SECRET dist/*
             """
         }
     }
