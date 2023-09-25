@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = [
     { name = "Julius König", email = "info@bastelquartier.de" }
 ]
-description = "A simple and easy to use logger for python"
+description = "A simple and easy to use logger for python."
 readme = "README.md"
 requires-python = ">=3.7.0"
 keywords = ["logger", "control", "controllogger", "fastapi", "rich", "logging", "log", "logs", "context", "contextlogger",
