@@ -1,7 +1,13 @@
 # testcontainer/Dockerfile
 
 FROM python:3
-WORKDIR /usr/src/app
+WORKDIR /usr/src/controllogger
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy source code
+COPY controllogger ./
+
+# Install package
+pip install --no-cache-dir ./
+
+# Install dev dependencies
+RUN pip install --no-cache-dir -r requirements-dev.txt
