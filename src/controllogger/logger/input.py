@@ -49,7 +49,7 @@ class InputLogger(BaseLogger):
         """
 
         if self.attached:
-            raise ValueError(f"Logger '{self.name}' already attached.")
+            return None
 
         if self.name in self.control_logger.input_loggers.keys():
             raise ValueError(f"Input logger for '{self.name}' already exists.")
@@ -63,7 +63,7 @@ class InputLogger(BaseLogger):
         """
 
         if not self.attached:
-            raise ValueError(f"Logger '{self.name}' already detached.")
+            return None
 
         if self.name not in self.control_logger.input_loggers.keys():
             raise ValueError(f"Input logger for '{self.name}' not found.")

@@ -658,9 +658,9 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
         return _matched, _pass_input_logger, _pass_logger_context
 
     def function_logger(self,
+                        func_config: LogFuntionConfig | dict[str, any] = None,
                         name: str = None,
                         context: str = None,
-                        func_config: LogFuntionConfig | dict[str, any] = None,
                         output_config: OutputLoggerConfig | dict[str, any] | Sequence[OutputLoggerConfig | dict[str, any]] = None,
                         input_config: InputLoggerConfig | dict[str, any] | Sequence[InputLoggerConfig | dict[str, any]] = None,
                         defaults_config: LoggerDefaultsConfig | dict[str, any] = None,
@@ -707,6 +707,11 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
                         f"Cant decorate class method __init__ with {self.__class__.__name__}.function_logger(). Please use {self.__class__.__name__}.class_logger() instead.")
                 raise NotImplementedError(
                     f"Cant decorate class method with {self.__class__.__name__}.function_logger(). Please use {self.__class__.__name__}.class_logger_method() instead.")
+            elif _self_or_cls == "cls":
+                ...
+            else:
+                _self_or_cls = None
+                _matched = []
 
             # set default values
             _name = name
@@ -744,19 +749,19 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
 
                 # pass context and input logger to function
                 if pass_logger_context is not None:
-                    kwargs[pass_logger_context] = lc
+                    kwargs[_pass_logger_context] = lc
                 if pass_input_logger is not None:
-                    kwargs[pass_input_logger] = input_logger
+                    kwargs[_pass_input_logger] = input_logger
 
                 # enter context
                 with lc(close=False) as _lc:
-                    result = self._log_function(func_signature=func_signature,
+                    result = self._log_function(*args,
+                                                func_signature=func_signature,
                                                 func_or_cls=func,
                                                 self_or_cls=None,
                                                 input_logger=input_logger,
                                                 func_config=func_config,
                                                 start=start,
-                                                *args,
                                                 **kwargs)
 
                 return result
@@ -768,14 +773,14 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
         return decorator
 
     def class_logger(self,
+                     func_config: LogFuntionConfig | dict[str, any] = None,
+                     func_configs: dict[str, LogFuntionConfig | dict[str, any]] = None,
                      name: str = None,
                      context: str = None,
                      cls_init_method: str = "__init__",
                      output_config: OutputLoggerConfig | dict[str, any] | Sequence[OutputLoggerConfig | dict[str, any]] = None,
                      input_config: InputLoggerConfig | dict[str, any] | Sequence[InputLoggerConfig | dict[str, any]] = None,
                      defaults_config: LoggerDefaultsConfig | dict[str, any] = None,
-                     func_config: LogFuntionConfig | dict[str, any] = None,
-                     func_configs: dict[str, LogFuntionConfig | dict[str, any]] = None,
                      pass_logger_context: str | None = ...,
                      pass_input_logger: str | None = ...) -> Callable:
 
@@ -878,13 +883,13 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
 
                 # enter context
                 with lc(close=False) as _lc:
-                    result = self._log_function(func_signature=cls_init_method_signature,
+                    result = self._log_function(*args,
+                                                func_signature=cls_init_method_signature,
                                                 func_or_cls=__cls_init_method__,
                                                 self_or_cls=_self_or_cls,
                                                 input_logger=logger_property(None),
                                                 func_config=func_config,
                                                 start=start,
-                                                *args,
                                                 **kwargs)
 
                 return result
@@ -933,8 +938,6 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
         elif not isinstance(func_config, LogFuntionConfig):
             raise TypeError(f"func_config must be of type {LogFuntionConfig.__name__} or dict.")
 
-        print()
-
         def decorator(func: Callable | Type) -> Callable:
             # check if function or type
             if inspect.isclass(func):
@@ -980,13 +983,13 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
                 args = [self_or_cls, *args]
 
                 with lc(close=False) as _lc:
-                    result = self._log_function(func_signature=func_signature,
+                    result = self._log_function(*args,
+                                                func_signature=func_signature,
                                                 func_or_cls=func,
                                                 self_or_cls=_self_or_cls,
                                                 input_logger=self_or_cls.__class_logger__,
                                                 func_config=func_config,
                                                 start=start,
-                                                *args,
                                                 **kwargs)
 
                 return result
