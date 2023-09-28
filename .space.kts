@@ -43,7 +43,7 @@ job("Run tests") {
 job("Build and publish Package") {
     startOn {
         gitPush {
-            branchFilter = "+:master"
+            branchFilter = "+:main"
         }
     }
     container(image = "bastelquartier.registry.jetbrains.space/p/fapi-el/testcontainer/testcontainer:0.0.1") {
