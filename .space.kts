@@ -41,11 +41,6 @@ job("Run tests") {
 }
 
 job("Build and publish Package") {
-    parameters {
-        string("pypi-token") {
-            description = "PyPi Token"
-        }
-    }
     container(image = "bastelquartier.registry.jetbrains.space/p/fapi-el/testcontainer/testcontainer:0.0.1") {
         shellScript {
             content = """
@@ -56,6 +51,8 @@ job("Build and publish Package") {
                 twine upload --repository-url https://pypi.pkg.jetbrains.space/bastelquartier/p/fapi-el/controllogger/legacy -u ${'$'}JB_SPACE_CLIENT_ID -p ${'$'}JB_SPACE_CLIENT_SECRET dist/*
                 
                 echo Publish package to pypi ...
+                env["pypi_token"] = "{{ project:pypi-token }}"
+                echo ${'$'}pypi_token
                 #twine upload --repository-url https://upload.pypi.org/legacy/ -u __token__ -p ${'$'}PYPI_TOKEN dist/*
             """
         }
