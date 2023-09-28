@@ -47,8 +47,12 @@ job("Build and publish to Space") {
             content = """
                 echo Build package...
                 python setup.py -bV ${'$'}JB_SPACE_EXECUTION_NUMBER build
-                echo Upload package...
-                twine upload --repository-url ${'$'}URL -u ${'$'}JB_SPACE_CLIENT_ID -p ${'$'}JB_SPACE_CLIENT_SECRET dist/*
+                
+                echo Publish package to space ...
+                twine upload --repository-url https://pypi.pkg.jetbrains.space/bastelquartier/p/fapi-el/controllogger/legacy -u ${'$'}JB_SPACE_CLIENT_ID -p ${'$'}JB_SPACE_CLIENT_SECRET dist/*
+                
+                echo Publish package to pypi ...
+                twine upload --repository-url https://upload.pypi.org/legacy/ -u __token__ -p ${'$'}PYPI_TOKEN dist/*
             """
         }
     }
