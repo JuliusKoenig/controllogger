@@ -53,7 +53,7 @@ job("Build and publish Package") {
         shellScript {
             content = """
                 echo Build package...
-                python setup.py -bV ${'$'}JB_SPACE_EXECUTION_NUMBER sdist
+                python setup.py sdist -bV ${'$'}JB_SPACE_EXECUTION_NUMBER
                 
                 echo Publish package to space ...
                 twine upload --repository-url https://pypi.pkg.jetbrains.space/bastelquartier/p/fapi-el/controllogger/legacy -u ${'$'}JB_SPACE_CLIENT_ID -p ${'$'}JB_SPACE_CLIENT_SECRET dist/*
