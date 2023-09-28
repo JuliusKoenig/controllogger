@@ -42,7 +42,7 @@ job("Run tests") {
 
 job("Build and publish Package") {
     parameters {
-        string("PYPI_TOKEN") {
+        string("pypi-token") {
             description = "PyPi Token"
         }
     }
@@ -56,7 +56,7 @@ job("Build and publish Package") {
                 twine upload --repository-url https://pypi.pkg.jetbrains.space/bastelquartier/p/fapi-el/controllogger/legacy -u ${'$'}JB_SPACE_CLIENT_ID -p ${'$'}JB_SPACE_CLIENT_SECRET dist/*
                 
                 echo Publish package to pypi ...
-                twine upload --repository-url https://upload.pypi.org/legacy/ -u __token__ -p ${'$'}PYPI_TOKEN dist/*
+                #twine upload --repository-url https://upload.pypi.org/legacy/ -u __token__ -p ${'$'}PYPI_TOKEN dist/*
             """
         }
     }
