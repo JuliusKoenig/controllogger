@@ -42,7 +42,7 @@ job("Run tests") {
 
 job("Build and publish Package") {
     parameters {
-        text("pypi_token", value="")
+        env["pypi_token"] = "{{ project:pypi_token }}"
     }
     container(image = "bastelquartier.registry.jetbrains.space/p/fapi-el/testcontainer/testcontainer:0.0.1") {
         shellScript {
