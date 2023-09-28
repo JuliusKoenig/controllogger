@@ -6,7 +6,7 @@ authors = [
 ]
 description = "A simple and easy to use logger for python."
 readme = "README.md"
-requires-python = ">=3.7.0"
+requires-python = ">=3.7"
 keywords = ["logger", "control", "controllogger", "fastapi", "rich", "logging", "log", "logs", "context", "contextlogger",
     "loggers", "logging-framework", "logging-library", "logging-tool", "logging-utility", "logging-util"]
 license = { text = "GPL-3.0" }
