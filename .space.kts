@@ -51,7 +51,7 @@ job("Build and publish Package") {
                 twine upload --repository-url https://pypi.pkg.jetbrains.space/bastelquartier/p/fapi-el/controllogger/legacy -u ${'$'}JB_SPACE_CLIENT_ID -p ${'$'}JB_SPACE_CLIENT_SECRET dist/*
                 
                 echo Publish package to pypi ...
-                env["pypi_token"] = "{{ project:pypi-token }}"
+                env["pypi_token"] = "{{ project:pypi_token }}"
                 echo ${'$'}pypi_token
                 #twine upload --repository-url https://upload.pypi.org/legacy/ -u __token__ -p ${'$'}PYPI_TOKEN dist/*
             """
