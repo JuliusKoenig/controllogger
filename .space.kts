@@ -51,9 +51,12 @@ job("Build and publish Package") {
                 echo Publish package to space ...
                 twine upload --repository-url https://pypi.pkg.jetbrains.space/bastelquartier/p/fapi-el/controllogger/legacy -u ${'$'}JB_SPACE_CLIENT_ID -p ${'$'}JB_SPACE_CLIENT_SECRET dist/*
                 
+                if [ ${'$'}pypi_token == "" ]; then
+                    echo Publish package to pypi failed. No token found.
+                    exit 1
+                fi
                 echo Publish package to pypi ...
-                echo ${'$'}pypi_token
-                #twine upload --repository-url https://upload.pypi.org/legacy/ -u __token__ -p ${'$'}PYPI_TOKEN dist/*
+                twine upload --repository-url https://upload.pypi.org/legacy/ -u __token__ -p ${'$'}PYPI_TOKEN dist/*
             """
         }
     }
