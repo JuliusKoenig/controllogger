@@ -41,6 +41,11 @@ job("Run tests") {
 }
 
 job("Build and publish Package") {
+    startOn {
+        gitPush {
+            branchFilter = "+:master"
+        }
+    }
     container(image = "bastelquartier.registry.jetbrains.space/p/fapi-el/testcontainer/testcontainer:0.0.1") {
         env["pypi_token"] = "{{ project:pypi_token }}"
         shellScript {
@@ -56,7 +61,7 @@ job("Build and publish Package") {
                     exit 1
                 fi
                 echo Publish package to pypi ...
-                twine upload --repository-url https://upload.pypi.org/legacy/ -u __token__ -p ${'$'}PYPI_TOKEN dist/*
+                twine upload --repository-url https://upload.pypi.org/legacy/ -u __token__ -p ${'$'}pypi_token dist/*
             """
         }
     }
