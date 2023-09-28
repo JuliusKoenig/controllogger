@@ -41,10 +41,6 @@ job("Run tests") {
 }
 
 job("Build and publish to Space") {
-    startOn {
-        gitPush { enabled = false }
-    }
-
     container(image = "bastelquartier.registry.jetbrains.space/p/fapi-el/testcontainer/testcontainer:0.0.1") {
         env["URL"] = "https://pypi.pkg.jetbrains.space/bastelquartier/p/fapi-el/controllogger/legacy"
         shellScript {
