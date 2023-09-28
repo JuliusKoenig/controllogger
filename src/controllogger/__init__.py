@@ -4,7 +4,7 @@ from pathlib import Path
 import setuptools
 
 __author__ = "Julius Koenig"
-__version__ = "0.1.1"
+__version__ = "0.1"
 
 # overwrite version if "__dev_version__" is set in environment
 if "__dev_version__" in os.environ:
