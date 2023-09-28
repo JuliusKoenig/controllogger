@@ -62,6 +62,7 @@ job("Build and publish Package") {
                     echo Publish package to pypi failed. No token found.
                     exit 1
                 fi
+                
                 echo Publish package to pypi ...
                 twine upload --repository-url https://upload.pypi.org/legacy/ -u __token__ -p ${'$'}pypi_token dist/*
             """
