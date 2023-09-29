@@ -1,4 +1,5 @@
 import dataclasses
+from typing import Union
 
 from controllogger.enums.log_levels import LogLevels
 from controllogger.logger.input import InputLogger
@@ -10,7 +11,7 @@ from controllogger.misc.output_logger_config import OutputLoggerConfig
 @dataclasses.dataclass
 class EasyLoggerConfig(LoggerDefaultsConfig):
     name: str = "easy_logger"  # Name of the control logger and also used as base name for output loggers.
-    level: LogLevels | int = LogLevels.DEBUG  # Log level for the control logger. All input loggers will automatically use this level.
+    level: Union[LogLevels, int] = LogLevels.DEBUG  # Log level for the control logger. All input loggers will automatically use this level.
     last_resort: bool = False  # Default last resort for the control logger.
     # Last resort is used when no output logger is found for a log record or the output logger is not able to handle the log record.
 

@@ -1,4 +1,5 @@
 import logging
+from typing import Union
 
 from controllogger.enums.log_levels import LogLevels
 from controllogger.logger.base import BaseLogger
@@ -10,7 +11,7 @@ class InputLogger(BaseLogger):
     _my_type: str = "InputLogger"
     _control_logger_type_field = "input_logger_type"
 
-    def __init__(self, name: str = None, level: LogLevels | int = logging.NOTSET, config: _ConfigClass | dict[str, any] = None):
+    def __init__(self, name: str = None, level: Union[LogLevels, int] = logging.NOTSET, config: Union[_ConfigClass, dict[str, any]] = None):
         super().__init__(name=name, level=level, config=config)
 
         self.attach()

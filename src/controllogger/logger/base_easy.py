@@ -1,8 +1,7 @@
-import dataclasses
 import logging
 from abc import ABC
 from pathlib import Path
-from typing import Callable
+from typing import Union
 
 import controllogger
 
@@ -10,7 +9,7 @@ import controllogger
 class BaseEasyLogger(logging.Logger, ABC):
 
     @staticmethod
-    def _pars_relative_path(path: Path | str, relative_path: Path | str) -> tuple[bool, str]:
+    def _pars_relative_path(path: Union[Path, str], relative_path: Union[Path, str]) -> tuple[bool, str]:
         try:
             relative_path_name = str(Path(path).relative_to(relative_path))
         except ValueError:

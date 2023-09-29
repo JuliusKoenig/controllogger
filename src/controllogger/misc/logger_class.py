@@ -1,9 +1,9 @@
-from typing import NewType, Callable
+from typing import NewType, Callable, Union
 
 from controllogger.logger.input import InputLogger
 from controllogger.misc.context import LoggerContext
 
-LoggerContextImplementation = NewType("LoggerContextImplementation", LoggerContext) | Callable
+LoggerContextImplementation = Union[NewType("LoggerContextImplementation", LoggerContext), Callable]
 InputLoggerImplementation = NewType("InputLoggerImplementation", InputLogger)
 
 

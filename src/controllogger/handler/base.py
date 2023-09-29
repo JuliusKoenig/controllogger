@@ -1,6 +1,14 @@
 import logging
-from abc import ABC, abstractmethod
 from types import FunctionType
+from typing import Optional
+
+
+def implement_post_init():
+    def decorator(func: FunctionType):
+        func.__post_init__implemented__ = True
+        return func
+
+    return decorator
 
 
 class BaseLogHandler(logging.Handler):
@@ -42,15 +50,7 @@ class BaseLogHandler(logging.Handler):
 
     def __init__(self, level=logging.NOTSET):
         super().__init__(level=level)
-        self.header_width: int | None = None
-
-    @staticmethod
-    def implement_post_init():
-        def decorator(func: FunctionType):
-            func.__post_init__implemented__ = True
-            return func
-
-        return decorator
+        self.header_width: Optional[int] = None
 
     @implement_post_init()
     def __post_init__(self):
@@ -66,7 +66,6 @@ class BaseLogHandler(logging.Handler):
                 return backup_format(record)
 
         self.format = format_wrapper
-
 
     def format_header(self, record) -> str:
         name: str = record.header["name"]

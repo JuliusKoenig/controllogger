@@ -1,5 +1,5 @@
 from abc import ABCMeta
-from typing import Any
+from typing import Any, Union
 
 
 class Singleton(ABCMeta):
@@ -69,7 +69,7 @@ class Singleton(ABCMeta):
         return current
 
     @classmethod
-    def get_by_type(cls, t: type | str) -> Any:
+    def get_by_type(cls, t: Union[type, str]) -> Any:
         if isinstance(t, str):
             searching_name = t
         elif isinstance(t, type):

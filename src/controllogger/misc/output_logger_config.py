@@ -1,5 +1,6 @@
 import dataclasses
 from pathlib import Path
+from typing import Optional, Union
 
 from controllogger.enums.terminal_out_file import TerminalOutFile
 from controllogger.misc.base_logger_config import BaseLoggerConfig
@@ -10,26 +11,26 @@ from controllogger.misc.filter import Filter
 @dataclasses.dataclass
 class OutputLoggerConfig(BaseLoggerConfig):
     filter: list[Filter] = dataclasses.field(default_factory=list)  # List of filters
-    last_resort: bool | None = None  # Last resort of output logger
-    header_width: int | None = None  # Header width of output logger
+    last_resort: Optional[bool] = None  # Last resort of output logger
+    header_width: Optional[int] = None  # Header width of output logger
     console: bool = False  # Enable console output
-    console_format: str | None = None  # Console format of output logger
-    console_outfile: TerminalOutFile | None = None  # Console outfile of output logger
-    console_width: int | None = None  # Console width of output logger
-    console_rich_force_terminal: bool | None = None  # Default console rich force terminal. Only used if rich is installed.
+    console_format: Optional[str] = None  # Console format of output logger
+    console_outfile: Optional[TerminalOutFile] = None  # Console outfile of output logger
+    console_width: Optional[int] = None  # Console width of output logger
+    console_rich_force_terminal: Optional[bool] = None  # Default console rich force terminal. Only used if rich is installed.
     file: bool = False  # Enable file output
-    file_format: str | None = None  # File format of output logger
-    file_path: Path | str | None = None  # File path of output logger
-    file_mode: str | None = None  # File mode of output logger
-    file_max_size: int | None = None  # File max size of output logger
-    file_backup_count: int | None = None  # File backup count of output logger
-    file_encoding: str | None = None  # File encoding of output logger
-    file_delay: bool | None = None  # File delay of output logger
-    file_archive_backup_count: int | None = None  # File archive backup count of output logger
+    file_format: Optional[str] = None  # File format of output logger
+    file_path: Union[Path, str, None] = None  # File path of output logger
+    file_mode: Optional[str] = None  # File mode of output logger
+    file_max_size: Optional[int] = None  # File max size of output logger
+    file_backup_count: Optional[int] = None  # File backup count of output logger
+    file_encoding: Optional[str] = None  # File encoding of output logger
+    file_delay: Optional[bool] = None  # File delay of output logger
+    file_archive_backup_count: Optional[int] = None  # File archive backup count of output logger
     db: bool = False  # Enable db output
-    db_format: str | None = None  # DB format of output logger
-    db_buffer_max_lines: int | None = None  # DB buffer max lines of output logger
-    db_buffer_max_time: int | None = None  # DB buffer max time of output logger
+    db_format: Optional[str] = None  # DB format of output logger
+    db_buffer_max_lines: Optional[int] = None  # DB buffer max lines of output logger
+    db_buffer_max_time: Optional[int] = None  # DB buffer max time of output logger
 
     def __default_init__(self, logger_defaults_config: LoggerDefaultsConfig):
         super().__default_init__(logger_defaults_config)

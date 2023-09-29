@@ -3,8 +3,8 @@ import traceback
 from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
+from typing import Union
 
-import controllogger
 from controllogger.enums.log_levels import LogLevels
 from controllogger.enums.logger_event import LoggerEvent
 from controllogger.logger.base_easy import BaseEasyLogger
@@ -12,7 +12,6 @@ from controllogger.misc.base_logger_config import BaseLoggerConfig
 from controllogger.misc.context import LoggerContext
 from controllogger.misc.easy_logger import easy_logger
 from controllogger.misc.singleton import Singleton
-
 
 # save if output logger on __new__ was called to prevent infinite loop
 _on_new = False
@@ -58,7 +57,7 @@ class BaseLogger(BaseEasyLogger, ABC):
 
         return super().__new__(cls)
 
-    def __init__(self, name: str = None, level: LogLevels | int = logging.NOTSET, config: _ConfigClass | dict[str, any] = None):
+    def __init__(self, name: str = None, level: Union[LogLevels, int] = logging.NOTSET, config: Union[_ConfigClass, dict[str, any]] = None):
         # parse config
         if config is None:
             config = {}
@@ -113,7 +112,7 @@ class BaseLogger(BaseEasyLogger, ABC):
         self.trigger_event(LoggerEvent.DESTROY)
 
     @classmethod
-    def _get_event_name(cls, event_name: str | LoggerEvent):
+    def _get_event_name(cls, event_name: Union[str, LoggerEvent]):
         if type(event_name) is not LoggerEvent:
             event_name = str(event_name)
             try:
@@ -125,7 +124,7 @@ class BaseLogger(BaseEasyLogger, ABC):
         return event_name
 
     @classmethod
-    def on_event(cls, event_name: LoggerEvent | str):
+    def on_event(cls, event_name: Union[LoggerEvent, str]):
 
         event_name = cls._get_event_name(event_name)
 
@@ -151,7 +150,7 @@ class BaseLogger(BaseEasyLogger, ABC):
 
         return decorator
 
-    def trigger_event(self, event_name: LoggerEvent | str, *args, **kwargs):
+    def trigger_event(self, event_name: Union[LoggerEvent, str], *args, **kwargs):
         event_name = self._get_event_name(event_name)
 
         easy_logger.debug(f"Triggering event '{event_name}' for logger '{self.name}'", stacklevel=10)
@@ -280,7 +279,7 @@ class BaseLogger(BaseEasyLogger, ABC):
             name: str,
             desc: str = None,
             lines: list[str] = None,
-            level: LogLevels = LogLevels.DEBUG,
+            level: LogLevels = LogLevels.INFO,
     ) -> None:
         """
         Prints a header to the terminal
@@ -291,6 +290,9 @@ class BaseLogger(BaseEasyLogger, ABC):
         :param level: Log level to use
         :return:
         """
+
+        if not self.isEnabledFor(level):
+            return
 
         if not isinstance(level, int):
             if logging.raiseExceptions:

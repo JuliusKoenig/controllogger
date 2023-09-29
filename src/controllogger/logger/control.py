@@ -2,8 +2,9 @@ import inspect
 import json
 import logging
 import time
+from functools import wraps
 from json import JSONEncoder
-from typing import Type, Callable, Sequence, Any
+from typing import Type, Callable, Sequence, Any, Union, Optional
 
 from controllogger.enums.log_levels import LogLevels
 from controllogger.logger.input import InputLogger
@@ -48,7 +49,7 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
     It also handles the context for input and output loggers.
     """
 
-    def __init__(self, easy_logger_config: EasyLoggerConfig | dict[str, any] = None):
+    def __init__(self, easy_logger_config: Union[EasyLoggerConfig, dict[str, any]] = None):
         # convert dict to EasyLoggerConfig
         if easy_logger_config is None:
             easy_logger_config = EasyLoggerConfig()
@@ -75,7 +76,7 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
         self._output_loggers = {}
 
         # context variables
-        self._active_context: LoggerContext | None = None
+        self._active_context: Union[LoggerContext, None] = None
         self._active_contexts: list[LoggerContext] = []
         self._decorator_contexts: list[LoggerContext] = []
 
@@ -84,7 +85,7 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
         self._temp_input_logger_cls: list[type[InputLogger]] = []
 
         # current class_logger_cls
-        self._class_logger_cls: type[Any] | None = None
+        self._class_logger_cls: Union[type[Any], None] = None
 
         # create output loggers
         self.create_output_logger(self.config.output_loggers)
@@ -93,21 +94,15 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
         return f"{self.__class__.__name__}()"
 
     def __str__(self):
-        name = self.name
-        level = LogLevels(self.level).name
-        propagate = self.propagate
-        disabled = self.disabled
-        active_contexts = ", ".join([str(context) for context in self.active_contexts])
-
         _str = f"{self.__class__.__name__}("
-        _str += f"{name=}, "
-        _str += f"{level=}, "
-        if not propagate:
-            _str += f"{propagate=}, "
-        if disabled:
-            _str += f"{disabled=}, "
+        _str += f"name={self.name}, "
+        _str += f"level={LogLevels(self.level).name}, "
+        if not self.propagate:
+            _str += f"propagate={self.propagate}, "
+        if self.disabled:
+            _str += f"disabled={self.disabled}, "
         if len(self.active_contexts) > 0:
-            _str += f"active_contexts=[{active_contexts}], "
+            _str += f"active_contexts=[{', '.join([str(context) for context in self.active_contexts])}], "
 
         _str = _str[:-2]
         _str += ")"
@@ -218,7 +213,7 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
 
         return self._input_loggers
 
-    def set_temp_input_logger_cls(self, logger_cls: Type[InputLogger] | Sequence[Type[InputLogger]] = None) -> None:
+    def set_temp_input_logger_cls(self, logger_cls: Union[Type[logging.Logger], Type[InputLogger], Sequence[Type[InputLogger]]] = None) -> None:
         """
         Sets the temporary input logger class.
         :param logger_cls: InputLogger class
@@ -257,25 +252,22 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
         input_logger_type = type(InputLogger.__name__, tuple(logger_classes), {})
         return input_logger_type
 
-    def create_input_logger(self,
-                            config: InputLoggerConfig | Sequence[InputLoggerConfig] | dict | list[dict] = None,
-                            logger_cls: Type[InputLogger] | Sequence[Type[InputLogger]] = None) -> InputLogger | list[InputLogger]:
+    def create_input_logger(self, config: Union[InputLoggerConfig, Sequence[InputLoggerConfig], dict, list[dict]] = None) -> Union[InputLogger, list[InputLogger]]:
         """
         Creates input new logger.
 
         :param config: InputLoggerConfig or list of OutputLoggerConfig
-        :param logger_cls: InputLogger class to use
         :return: InputLogger or list of InputLogger
         """
 
         if not isinstance(config, Sequence):
             config = [config]
 
-        self.set_temp_input_logger_cls(logger_cls=logger_cls)
         input_logger = []
         for c in config:
+            self.set_temp_input_logger_cls(logger_cls=c.logger_cls)
             input_logger.append(InputLogger(config=c))
-        self.reset_temp_input_logger_cls()
+            self.reset_temp_input_logger_cls()
 
         if len(input_logger) == 1:
             return input_logger[0]
@@ -292,7 +284,7 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
 
         return self._output_loggers
 
-    def set_temp_output_logger_cls(self, logger_cls: Type[OutputLogger] | Sequence[Type[OutputLogger]] = None) -> None:
+    def set_temp_output_logger_cls(self, logger_cls: Union[Type[OutputLogger], Sequence[Type[OutputLogger]]] = None) -> None:
         """
         Sets the temporary output logger class.
         :param logger_cls: OutputLogger class
@@ -331,8 +323,8 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
         return output_logger_type
 
     def create_output_logger(self,
-                             config: OutputLoggerConfig | Sequence[OutputLoggerConfig] | dict | list[dict] = None,
-                             logger_cls: Type[OutputLogger] | Sequence[Type[OutputLogger]] = None) -> OutputLogger | list[OutputLogger]:
+                             config: Union[OutputLoggerConfig, Sequence[OutputLoggerConfig], dict, list[dict]] = None,
+                             logger_cls: Union[Type[OutputLogger], Sequence[Type[OutputLogger]]] = None) -> Union[OutputLogger, list[OutputLogger]]:
         """
         Creates output new logger.
 
@@ -391,7 +383,7 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
         return self._decorator_contexts.copy()
 
     @property
-    def context_logger(self) -> list[InputLogger | OutputLogger]:
+    def context_logger(self) -> list[Union[InputLogger, OutputLogger]]:
         out = []
         for logger_name in logging.root.manager.loggerDict.keys():
             logger = logging.root.manager.loggerDict[logger_name]
@@ -431,9 +423,9 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
                  context: str = None,
                  init: bool = True,
                  close: bool = True,
-                 output_config: OutputLoggerConfig | dict[str, any] | Sequence[OutputLoggerConfig | dict[str, any]] = None,
-                 input_config: InputLoggerConfig | dict[str, any] | Sequence[InputLoggerConfig | dict[str, any]] = None,
-                 defaults_config: LoggerDefaultsConfig | dict[str, any] = None,
+                 output_config: Union[OutputLoggerConfig, dict[str, any], Sequence[Union[OutputLoggerConfig, dict[str, any]]]] = None,
+                 input_config: Union[InputLoggerConfig, dict[str, any], Sequence[Union[InputLoggerConfig, dict[str, any]]]] = None,
+                 defaults_config: Union[LoggerDefaultsConfig, dict[str, any]] = None,
                  logger_cls: Type[logging.Logger] = None) -> LoggerContext:
         """
         Creates a new context.
@@ -457,7 +449,7 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
                              logger_cls=logger_cls)
 
     @staticmethod
-    def _get_var_from_signature(signature: inspect.Signature, cls_type: Type | None, prefer_name: list[str], _matched: list[str]) -> tuple[list[str], str]:
+    def _get_var_from_signature(signature: inspect.Signature, cls_type: Optional[Type], prefer_name: list[str], _matched: list[str]) -> tuple[list[str], str]:
         # fist looking fo type annotation
         if cls_type is not None:
             for param in signature.parameters.values():
@@ -541,8 +533,8 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
     def _log_function(self,
                       *args,
                       func_signature: inspect.Signature,
-                      func_or_cls: Callable | Type,
-                      self_or_cls: str | None,
+                      func_or_cls: Union[Callable, Type],
+                      self_or_cls: Optional[str],
                       input_logger: InputLogger,
                       func_config: LogFuntionConfig,
                       start: float = None,
@@ -618,8 +610,8 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
 
     def _get_sig_vars(self,
                       func_signature: inspect.Signature,
-                      pass_logger_context: str | None = ...,
-                      pass_input_logger: str | None = ...,
+                      pass_logger_context: Optional[str] = ...,
+                      pass_input_logger: Optional[str] = ...,
                       _matched: list[str] = None) -> tuple[list[str], str, str]:
         # init matched
         if _matched is None:
@@ -658,14 +650,27 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
         return _matched, _pass_input_logger, _pass_logger_context
 
     def function_logger(self,
-                        func_config: LogFuntionConfig | dict[str, any] = None,
-                        name: str = None,
-                        context: str = None,
-                        output_config: OutputLoggerConfig | dict[str, any] | Sequence[OutputLoggerConfig | dict[str, any]] = None,
-                        input_config: InputLoggerConfig | dict[str, any] | Sequence[InputLoggerConfig | dict[str, any]] = None,
-                        defaults_config: LoggerDefaultsConfig | dict[str, any] = None,
-                        pass_logger_context: str | None = ...,
-                        pass_input_logger: str | None = ...) -> Callable:
+                        func_config: Union[LogFuntionConfig, dict[str, any]] = None,
+                        name: Optional[str] = None,
+                        context: Optional[str] = None,
+                        output_config: Union[OutputLoggerConfig, dict[str, any], Sequence[Union[OutputLoggerConfig, dict[str, any]]]] = None,
+                        input_config: Union[InputLoggerConfig, dict[str, any], Sequence[Union[InputLoggerConfig, dict[str, any]]]] = None,
+                        defaults_config: Union[LoggerDefaultsConfig, dict[str, any]] = None,
+                        pass_logger_context: Optional[str] = ...,
+                        pass_input_logger: Optional[str] = ...) -> Callable:
+        """
+        Decorator to log a function.
+
+        :param func_config: LogFuntionConfig or dict -> config for function logger
+        :param name: str -> name of the function in the log
+        :param context: str -> context of the function
+        :param output_config: dict, OutputLoggerConfig or list of dict or OutputLoggerConfig -> config for output logger created with context
+        :param input_config: dict, InputLoggerConfig or list of dict or InputLoggerConfig -> config for input logger created with context if None a default input logger is created
+        :param defaults_config: LoggerDefaultsConfig or dict -> default config for output and input loggers created with context
+        :param pass_logger_context: str -> name of the variable to pass the logger context to the function
+        :param pass_input_logger: str -> name of the variable to pass the first input logger to the function
+        :return: Callable
+        """
 
         if func_config is None:
             func_config = LogFuntionConfig()
@@ -674,7 +679,7 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
         elif not isinstance(func_config, LogFuntionConfig):
             raise TypeError(f"func_config must be of type {LogFuntionConfig.__name__} or dict.")
 
-        def decorator(func: Callable | Type) -> Callable:
+        def decorator(func: Union[Callable, Type]) -> Callable:
             # check if function or type
             if inspect.isclass(func):
                 raise NotImplementedError(f"Cant decorate class with {self.__class__.__name__}.function_logger(). Please use {self.__class__.__name__}.class_logger() instead.")
@@ -722,6 +727,11 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
             if context is None:
                 _context = func.__name__
 
+            input_logger_name = f"{_name}.logger"
+            # get first input logger
+            if type(input_config) is list:
+                input_logger_name = input_config[0].name
+
             # check if function or type
             easy_logger.debug(f"Creating context '{_context}' with name '{_name}' for function '{func.__name__}'")
 
@@ -739,8 +749,16 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
                 # add function context to decorator_contexts
                 self._decorator_contexts.append(lc)
 
-                input_logger = ControlLogger.get_logger(f"{_name}.logger")
+                # create output logger
+                if output_config is not None:
+                    self.create_output_logger(config=output_config)
 
+                # create input logger
+                if input_config is not None:
+                    self.create_input_logger(config=input_config)
+                input_logger = ControlLogger.get_logger(input_logger_name)
+
+            @wraps(func)
             def wrapper(*args, **kwargs):
                 # perform time measurement
                 start = None
@@ -773,16 +791,31 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
         return decorator
 
     def class_logger(self,
-                     func_config: LogFuntionConfig | dict[str, any] = None,
-                     func_configs: dict[str, LogFuntionConfig | dict[str, any]] = None,
+                     func_config: Union[LogFuntionConfig, dict[str, any]] = None,
+                     func_configs: dict[str, Union[LogFuntionConfig, dict[str, any]]] = None,
                      name: str = None,
                      context: str = None,
                      cls_init_method: str = "__init__",
-                     output_config: OutputLoggerConfig | dict[str, any] | Sequence[OutputLoggerConfig | dict[str, any]] = None,
-                     input_config: InputLoggerConfig | dict[str, any] | Sequence[InputLoggerConfig | dict[str, any]] = None,
-                     defaults_config: LoggerDefaultsConfig | dict[str, any] = None,
-                     pass_logger_context: str | None = ...,
-                     pass_input_logger: str | None = ...) -> Callable:
+                     output_config: Union[OutputLoggerConfig, dict[str, any], Sequence[Union[OutputLoggerConfig, dict[str, any]]]] = None,
+                     input_config: Union[InputLoggerConfig, dict[str, any], Sequence[Union[InputLoggerConfig, dict[str, any]]]] = None,
+                     defaults_config: Union[LoggerDefaultsConfig, dict[str, any]] = None,
+                     pass_logger_context: Optional[str] = ...,
+                     pass_input_logger: Optional[str] = ...) -> Callable:
+        """
+        Decorator to log a class.
+
+        :param func_config: LogFuntionConfig or dict -> config for __init__ function logger or custom init function set via cls_init_method
+        :param func_configs: dict[str, LogFuntionConfig or dict] -> config for class functions
+        :param name: str -> name of the class in the log
+        :param context: str -> context of the class
+        :param cls_init_method: str -> name of the init method
+        :param output_config: dict, OutputLoggerConfig or list of dict or OutputLoggerConfig -> config for output logger created with context
+        :param input_config: dict, InputLoggerConfig or list of dict or InputLoggerConfig -> config for input logger created with context if None a default input logger is created
+        :param defaults_config: LoggerDefaultsConfig or dict -> default config for output and input loggers created with context
+        :param pass_logger_context: str -> name of the context property set to class by decorator
+        :param pass_input_logger: str -> name of the input logger property set to class by decorator, only first input logger is passed
+        :return: Decorated Class
+        """
 
         if func_config is None:
             func_config = LogFuntionConfig()
@@ -813,6 +846,11 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
             if context is None:
                 _context = cls.__name__
 
+            input_logger_name = f"{_name}.logger"
+            # get first input logger
+            if type(input_config) is list:
+                input_logger_name = input_config[0].name
+
             _pass_input_logger = pass_input_logger
             if pass_input_logger is Ellipsis:
                 _pass_input_logger = "logger"
@@ -828,7 +866,7 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
                 raise ValueError(f"Could not find context '{_context}' for class '{cls.__name__}'")
 
             def logger_property(_self):
-                logger_context = ControlLogger.get_logger(f"{_name}.logger")
+                logger_context = ControlLogger.get_logger(input_logger_name)
                 return logger_context
 
             # check if function or type
@@ -841,6 +879,14 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
                       defaults_config=defaults_config) as lc:
                 # add type context to decorator_contexts
                 self._decorator_contexts.append(lc)
+
+                # create output logger
+                if output_config is not None:
+                    self.create_output_logger(config=output_config)
+
+                # create input logger
+                if input_config is not None:
+                    self.create_input_logger(config=input_config)
 
             # set logger context property
             if _pass_logger_context is not None:
@@ -875,6 +921,7 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
                 _self_or_cls = None
 
             # overwrite cls_init_method
+            @wraps(__cls_init_method__)
             def __class_logger_cls_init_method__(*args, **kwargs):
                 # perform time measurement
                 start = None
@@ -929,7 +976,13 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
 
         return decorator
 
-    def class_logger_method(self, func_config: LogFuntionConfig | dict[str, any] = None) -> Callable:
+    def class_logger_method(self, func_config: Union[LogFuntionConfig, dict[str, any]] = None) -> Callable:
+        """
+        Decorator to log a class method.
+
+        :param func_config: LogFuntionConfig or dict -> config for function logger
+        :return: Callable
+        """
 
         if func_config is None:
             func_config = LogFuntionConfig()
@@ -938,7 +991,7 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
         elif not isinstance(func_config, LogFuntionConfig):
             raise TypeError(f"func_config must be of type {LogFuntionConfig.__name__} or dict.")
 
-        def decorator(func: Callable | Type) -> Callable:
+        def decorator(func: Union[Callable, Type]) -> Callable:
             # check if function or type
             if inspect.isclass(func):
                 raise NotImplementedError(f"Cant decorate class with {self.__class__.__name__}.function_logger(). Please use {self.__class__.__name__}.class_logger() instead.")
@@ -971,6 +1024,7 @@ class ControlLogger(logging.Logger, metaclass=Singleton):
             if _self_or_cls is None:
                 raise ValueError(f"Could not find parameter 'self' or 'cls' in signature '{func_signature}'")
 
+            @wraps(func)
             def wrapper(self_or_cls, *args, **kwargs):
                 # perform time measurement
                 start = None

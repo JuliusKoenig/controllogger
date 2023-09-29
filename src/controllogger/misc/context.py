@@ -1,7 +1,7 @@
 import logging
 import random
 import string
-from typing import Sequence, Type, Any
+from typing import Sequence, Type, Any, Union
 
 from controllogger.misc.easy_logger import easy_logger
 from controllogger.misc.input_logger_config import InputLoggerConfig
@@ -15,9 +15,9 @@ class LoggerContext:
                  context: str,
                  init: bool,
                  close: bool,
-                 output_config: OutputLoggerConfig | dict[str, any] | Sequence[OutputLoggerConfig | dict[str, any]] = None,
-                 input_config: InputLoggerConfig | dict[str, any] | Sequence[InputLoggerConfig | dict[str, any]] = None,
-                 defaults_config: LoggerDefaultsConfig | dict[str, any] = None,
+                 output_config: Union[OutputLoggerConfig, dict[str, any], Sequence[Union[OutputLoggerConfig, dict[str, any]]]] = None,
+                 input_config: Union[InputLoggerConfig, dict[str, any], Sequence[Union[InputLoggerConfig, dict[str, any]]]] = None,
+                 defaults_config: Union[LoggerDefaultsConfig, dict[str, any]] = None,
                  logger_cls: type[logging.Logger] = logging.Logger,
                  _parent_context: "LoggerContext" = None):
         # if context is None generate random context if not, check if context is in backups
@@ -131,7 +131,7 @@ class LoggerContext:
         return Singleton.get_by_type("ControlLogger")
 
     @property
-    def context_logger(self) -> list[logging.Logger | Any]:
+    def context_logger(self) -> list[Union[logging.Logger, Any]]:
         """
         Returns a list of all loggers with context
 
@@ -185,7 +185,7 @@ class LoggerContext:
         return LoggerDefaultsConfig(**output_logger_config_dict)
 
     @logger_defaults_config.setter
-    def logger_defaults_config(self, value: LoggerDefaultsConfig | dict[str, any]):
+    def logger_defaults_config(self, value: Union[LoggerDefaultsConfig, dict[str, any]]):
         if type(value) is dict:
             value = LoggerDefaultsConfig(**value)
         self._logger_defaults_config = value
@@ -195,8 +195,8 @@ class LoggerContext:
         return self._logger_cls
 
     def create_output_logger(self,
-                             config: OutputLoggerConfig | Sequence[OutputLoggerConfig] | dict | list[dict] = None,
-                             logger_cls: Type[logging.Logger] = None) -> logging.Logger | list[logging.Logger]:
+                             config: Union[OutputLoggerConfig, Sequence[OutputLoggerConfig], dict, list[dict]] = None,
+                             logger_cls: Type[logging.Logger] = None) -> Union[logging.Logger, list[logging.Logger]]:
         """
         Creates output new logger for context
 
@@ -210,8 +210,8 @@ class LoggerContext:
         return self.control_logger.create_output_logger(config=config, logger_cls=logger_cls)
 
     def create_input_logger(self,
-                            config: InputLoggerConfig | Sequence[InputLoggerConfig] | dict | list[dict] = None,
-                            logger_cls: Type[logging.Logger] = None) -> logging.Logger | list[logging.Logger]:
+                            config: Union[InputLoggerConfig, Sequence[InputLoggerConfig], dict, list[dict]] = None,
+                            logger_cls: Type[logging.Logger] = None) -> Union[logging.Logger, list[logging.Logger]]:
         """
         Creates input new logger for context
 

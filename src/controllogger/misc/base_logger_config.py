@@ -1,4 +1,6 @@
 import dataclasses
+import logging
+from typing import Type, Union, Optional
 
 from controllogger.enums.log_levels import LogLevels
 from controllogger.misc.base_dataclass import BaseDataclass
@@ -8,14 +10,17 @@ from controllogger.misc.logger_defaults_config import LoggerDefaultsConfig
 @dataclasses.dataclass
 class BaseLoggerConfig(BaseDataclass):
     name: str  # Name of logger
-    level: LogLevels | int | None = None  # Level of logger
+    level: Union[LogLevels, int, None] = None  # Level of logger
 
     # log events
-    log_events: bool | None = None  # Log events for logger. Is used to log events to logger. Default is False.
-    log_init: bool | None = None  # Log init for input for logger. Is used to log the init event to loggers. Default is False.
-    log_attach: bool | None = None  # Log attach for logger. Is used to log the attach event to logger. Default is False.
-    log_detach: bool | None = None  # Log detach for logger. Is used to log the detach event to logger. Default is False.
-    log_destroy: bool | None = None  # Log destroy for logger. Is used to log the destroy event to logger. Default is False.
+    log_events: Optional[bool] = None  # Log events for logger. Is used to log events to logger. Default is False.
+    log_init: Optional[bool] = None  # Log init for input for logger. Is used to log the init event to loggers. Default is False.
+    log_attach: Optional[bool] = None  # Log attach for logger. Is used to log the attach event to logger. Default is False.
+    log_detach: Optional[bool] = None  # Log detach for logger. Is used to log the detach event to logger. Default is False.
+    log_destroy: Optional[bool] = None  # Log destroy for logger. Is used to log the destroy event to logger. Default is False.
+
+    # custom logger cls
+    logger_cls: Type[logging.Logger] = None
 
     def __default_init__(self, logger_defaults_config: LoggerDefaultsConfig):
         # setup None values

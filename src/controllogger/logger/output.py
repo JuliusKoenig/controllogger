@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from typing import Union
 
 from controllogger.enums.log_levels import LogLevels
 from controllogger.enums.operator import Operator
@@ -8,7 +9,6 @@ from controllogger.handler.tar_rotating_file_handler import TarRotatingFileHandl
 from controllogger.logger.base import BaseLogger
 from controllogger.misc.easy_logger import easy_logger
 from controllogger.misc.output_logger_config import OutputLoggerConfig
-from controllogger.misc.singleton import Singleton
 
 # try to import rich console handler
 try:
@@ -23,7 +23,7 @@ class OutputLogger(BaseLogger):
     _my_type = "Output Logger"
     _control_logger_type_field = "output_logger_type"
 
-    def __init__(self, name: str = None, level: LogLevels | int = logging.NOTSET, config: _ConfigClass | dict[str, any] = None):
+    def __init__(self, name: str = None, level: Union[LogLevels, int] = logging.NOTSET, config: Union[_ConfigClass, dict[str, any]] = None):
         self._use_control_logger_name = True
         super().__init__(name=name, level=level, config=config)
 
@@ -133,10 +133,7 @@ class OutputLogger(BaseLogger):
         del self.control_logger.all_logger[self.name]
 
     def __str__(self) -> str:
-        name = self.name
-        level = LogLevels(self.level).name
-        context_str = ", ".join([str(context) for context in self.contexts])
-        r = f"{self.__class__.__name__}({name=}, {level=}, "
+        r = f"{self.__class__.__name__}(name={self.name}, level={LogLevels(self.level).name}, "
         if self.closed:
             r = r[:-2]
             r += ") CLOSED"
@@ -146,7 +143,7 @@ class OutputLogger(BaseLogger):
             r += ") DETACHED"
             return r
         if len(self.contexts) > 0:
-            r += f"contexts=({context_str}), "
+            r += f"contexts=({', '.join([str(context) for context in self.contexts])}), "
         if self.config.console:
             console = self.config.console_outfile.value
             r += f"console --> {console}, "

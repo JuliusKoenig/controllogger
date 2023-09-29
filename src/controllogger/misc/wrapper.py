@@ -1,6 +1,6 @@
 import asyncio
 import inspect
-from typing import Callable, Type
+from typing import Callable, Type, Optional
 
 _wrapper_self_of_cls = None
 
@@ -122,7 +122,7 @@ class Wrapper:
         self._wrapper_self_of_cls = value
 
     @property
-    def cls(self) -> Type | None:
+    def cls(self) -> Optional[Type]:
         if not self._is_cls:
             return None
         return self._cls
