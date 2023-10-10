@@ -262,11 +262,19 @@ class BaseLogger(BaseEasyLogger, ABC):
     def handle(self, record):
         # raise error if logger is closed
         if not self.open:
-            raise ValueError(f"Logger '{self.name}' is closed.")
+            if self.control_logger.config.raise_on_closed:
+                raise ValueError(f"Logger '{self.name}' is closed.")
+            else:
+                easy_logger.warning(f"Logger '{self.name}' is closed.")
+                return
 
         # raise error if logger is not attached
         if not self.attached and not self._on_attaching:
-            raise ValueError(f"Logger '{self.name}' is not attached.")
+            if self.control_logger.config.raise_on_not_attached:
+                raise ValueError(f"Logger '{self.name}' is not attached.")
+            else:
+                easy_logger.warning(f"Logger '{self.name}' is not attached.")
+                return
 
         # skip handle if skip_handle is True
         skip_handle = self.skip_handle

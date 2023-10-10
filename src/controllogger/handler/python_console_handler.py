@@ -1,5 +1,6 @@
 import logging
 import sys
+import traceback
 
 from controllogger.enums.terminal_out_file import TerminalOutFile
 from controllogger.handler.base import BaseLogHandler
@@ -22,10 +23,19 @@ class PythonConsoleHandler(logging.StreamHandler, BaseLogHandler):
     def handle(self, record):
         # check if any msg line is longer than console_width
         reorganize_msg = False
-        for line in record.msg.splitlines():
-            if len(line) > self.console_width:
-                reorganize_msg = True
-                break
+        if isinstance(record.msg, str):
+            for line in record.msg.splitlines():
+                if len(line) > self.console_width:
+                    reorganize_msg = True
+                    break
+        elif isinstance(record.msg, Exception):
+            tb_str = "".join(traceback.format_tb(record.msg.__traceback__))
+            for line in tb_str.splitlines():
+                if len(line) > self.console_width:
+                    reorganize_msg = True
+                    break
+        else:
+            raise ValueError(f"Unknown record.msg type: {type(record.msg)}")
 
         # reorganize msg
         if reorganize_msg:

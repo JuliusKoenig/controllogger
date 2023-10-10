@@ -50,7 +50,7 @@ class Singleton(ABCMeta):
             if cls.__name__ not in Singleton.singleton_map:
                 return super().__call__(*args, **kwargs)
             else:
-                raise RuntimeError(f"Singleton {cls.__name__} already initialized. Use {cls.__name__}(init=False) to get the instance.")
+                return cls.get_by_name(cls.__name__)
         else:
             if cls.__name__ in Singleton.singleton_map:
                 return cls.get_by_name(cls.__name__)

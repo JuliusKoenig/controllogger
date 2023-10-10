@@ -15,10 +15,13 @@ class EasyLoggerConfig(LoggerDefaultsConfig):
     last_resort: bool = False  # Default last resort for the control logger.
     # Last resort is used when no output logger is found for a log record or the output logger is not able to handle the log record.
 
+    raise_on_closed: bool = True  # Raise an exception if the logger is closed.
+    raise_on_not_attached: bool = False  # Raise an exception if the logger is not attached to any output logger.
+
+    # List of output loggers created by the control logger on startup.
     output_loggers: list[OutputLoggerConfig] = dataclasses.field(default_factory=lambda: [OutputLoggerConfig(name="console", console=True),
                                                                                           OutputLoggerConfig(name="file",
                                                                                                              file=True)])
-    # List of output loggers created by the control logger on startup.
 
     # define base classes
     input_logger_cls: type[InputLogger] = InputLogger
