@@ -1,7 +1,7 @@
 # testcontainer/Dockerfile
 
 FROM python:3
-WORKDIR /usr/src/controllogger
+WORKDIR /usr/src/niceuitools
 
 # Copy files
 COPY . .
