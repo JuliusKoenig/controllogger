@@ -40,7 +40,7 @@ class PythonConsoleHandler(logging.StreamHandler, BaseLogHandler):
         # reorganize msg
         if reorganize_msg:
             new_msg_lines = []
-            for line in record.msg.splitlines():
+            for line in str(record.msg).splitlines():
                 if len(line) > self.console_width:
                     for i in range(0, len(line), self.console_width):
                         new_msg_lines.append(line[i:i + self.console_width])
