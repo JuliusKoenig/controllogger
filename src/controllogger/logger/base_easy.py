@@ -54,3 +54,6 @@ class BaseEasyLogger(logging.Logger, ABC):
                 raise ValueError(f"Record already has attribute '{key}'.")
             setattr(record, key, value)
         return record
+
+    def __call__(self, msg: str, *args, **kwargs):
+        return self.log(level=self.level, msg=msg, *args, **kwargs)
